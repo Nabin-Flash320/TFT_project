@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "fontx.h": "c",
+        "color.h": "c",
+        "cstdint": "cpp",
+        "temp_project.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "limits": "c",
+        "semaphore": "c"
+    }
+}
