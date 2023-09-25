@@ -39,6 +39,19 @@ static uint8_t min = 0;
 static TFT_t dev;
 static uint8_t *temperatureProfile = NULL;
 
+// set font file
+static FontxFile fx16G[2];
+static FontxFile fx24G[2];
+static FontxFile fx32G[2];
+
+static FontxFile fx16M[2];
+static FontxFile fx24M[2];
+static FontxFile fx32M[2];
+
+static QueueHandle_t gpio_interrupt_queue;
+static const uint32_t gpio_num_profile_selector_inc = 5;
+// static const uint32_t gpio_num_profile_selector_dec = 19;
+
 // Check memory leek
 void traceHeap()
 {
@@ -62,16 +75,43 @@ void traceHeap()
 
 static void profile_selector_gpio_handler(void *arg)
 {
-	clear_profile_graph(&dev, temperatureProfile, 36, 36, min, max);
-	++profile_selected;
-	if (TEMP_PROJECT_PROFILE_MAX == profile_selected)
+	xQueueSendFromISR(gpio_interrupt_queue, arg, 0);
+}
+
+static void profile_selector_gpio_queue_receiver(void *parama)
+{
+	static TickType_t tick_previous = 0;
+	uint32_t pin_number = 0;
+	int offset = 0;
+	int highlight_rect = 1;
+	while (1)
 	{
-		profile_selected = 1;
+		if (xQueueReceive(gpio_interrupt_queue, &pin_number, portMAX_DELAY))
+		{
+			TickType_t tick_now = xTaskGetTickCount();
+			if ((tick_now - tick_previous) > (200 / portTICK_RATE_MS))
+			{
+				++profile_selected;
+				++highlight_rect;
+				if (profile_selected > RECTANGLE_ARRAY_SIZE)
+				{
+					offset = profile_selected - RECTANGLE_ARRAY_SIZE;
+					if (offset > (RECTANGLE_DISPLAY_SIZE - RECTANGLE_ARRAY_SIZE))
+					{
+						profile_selected = RECTANGLE_DISPLAY_SIZE;
+						continue;
+					}
+					clear_text(&dev, fx16M);
+					add_text_with_offset(offset);
+					highlight_rect = RECTANGLE_ARRAY_SIZE;
+					change_text(&dev, fx16M);
+				}
+				highlight_profile(&dev, highlight_rect);
+				tick_previous = tick_now;
+			}
+		}
 	}
-	temperatureProfile = select_profile(&dev, profile_selected);
-	temperatureProfile = select_profile(&dev, profile_selected);
-	highlight_profile(&dev, profile_selected);
-	draw_profile_graph(&dev, temperatureProfile, 36, 36, min, max, WHITE);
+	vTaskDelete(NULL);
 }
 
 void TFT(void *pvParameters)
@@ -80,30 +120,19 @@ void TFT(void *pvParameters)
 	uint16_t background_color = BLACK;
 	uint16_t rectangle_color = WHITE;
 	uint16_t font_color = WHITE;
-	// set font file
-	FontxFile fx16G[2];
-	FontxFile fx24G[2];
-	FontxFile fx32G[2];
+
 	InitFontx(fx16G, "/spiffs/ILGH16XB.FNT", ""); // 8x16Dot Gothic
 	InitFontx(fx24G, "/spiffs/ILGH24XB.FNT", ""); // 12x24Dot Gothic
 	InitFontx(fx32G, "/spiffs/ILGH32XB.FNT", ""); // 16x32Dot Gothic
 
-	FontxFile fx16M[2];
-	FontxFile fx24M[2];
-	FontxFile fx32M[2];
 	InitFontx(fx16M, "/spiffs/ILMH16XB.FNT", ""); // 8x16Dot Mincyo
 	InitFontx(fx24M, "/spiffs/ILMH24XB.FNT", ""); // 12x24Dot Mincyo
 	InitFontx(fx32M, "/spiffs/ILMH32XB.FNT", ""); // 16x32Dot Mincyo
 
-
 	lcd_interface_cfg(&dev, INTERFACE_GPIO);
 	INIT_FUNCTION(&dev, CONFIG_WIDTH, CONFIG_HEIGHT, CONFIG_OFFSETX, CONFIG_OFFSETY);
 
-	for (int i = TEMP_PROJECT_PROFILE_1; i < TEMP_PROJECT_PROFILE_MAX; i++)
-	{
-		profile_add(i, rectangle_color, "Profile", font_color);
-	}
-	print_profiles();
+	rectangle_array_prepare();
 
 	traceHeap();
 
@@ -113,9 +142,10 @@ void TFT(void *pvParameters)
 	lcdDrawRect(&dev, 17, 17, CONFIG_WIDTH - 17, CONFIG_HEIGHT - 122, rectangle_color);
 
 	draw_profile_rects(&dev, fx16M);
+	change_text(&dev, fx16M);
 
 	gpio_config_t profile_button_config = {
-		.pin_bit_mask = (1ULL << 5),
+		.pin_bit_mask = (1ULL << gpio_num_profile_selector_inc),
 		.mode = GPIO_MODE_INPUT,
 		.pull_up_en = GPIO_PULLUP_DISABLE,
 		.pull_down_en = GPIO_PULLDOWN_ENABLE,
@@ -123,16 +153,13 @@ void TFT(void *pvParameters)
 	};
 	gpio_config(&profile_button_config);
 	gpio_install_isr_service(0);
-	gpio_isr_handler_add(5, profile_selector_gpio_handler, NULL);
+	gpio_isr_handler_add(gpio_num_profile_selector_inc, profile_selector_gpio_handler, (void *)&gpio_num_profile_selector_inc);
+
+	uint8_t *temperature_profile = select_profile(&dev, 1);
+	highlight_profile(&dev, 1);
 
 	while (1)
 	{
-		temperatureProfile = select_profile(&dev, profile_selected);
-		temperatureProfile = select_profile(&dev, profile_selected);
-		highlight_profile(&dev, profile_selected);
-		max = get_max(temperatureProfile, 150);
-		min = get_min(temperatureProfile, 150);
-		draw_profile_graph(&dev, temperatureProfile, 36, 36, min, max, WHITE);
 		vTaskDelay(portMAX_DELAY);
 	} // end while
 } // END TFT function
@@ -228,5 +255,8 @@ void app_main()
 		return;
 	listSPIFFS("/images/");
 
+	gpio_interrupt_queue = xQueueCreate(20, sizeof(uint32_t));
+
+	xTaskCreate(profile_selector_gpio_queue_receiver, "profile_selector_gpio_queue_receiver", 1024 * 6, NULL, 2, NULL);
 	xTaskCreate(TFT, "TFT", 1024 * 6, NULL, 2, NULL);
 }

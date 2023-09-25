@@ -105,6 +105,89 @@ const static int profile_rect_margin_height = 12;
 static const int horizontal_gap = 5;
 static const int verticle_gap = 2;
 
+static s_rectangle_t rectangle_array[RECTANGLE_ARRAY_SIZE] = {{0}, {0}, {0}, {0}, {0}};
+static char *rectangle_display[RECTANGLE_DISPLAY_SIZE] = {"Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5", "Keypad"};
+
+int rectangle_array_prepare()
+{
+    int ret = 0;
+    for (int i = 0; i < 5; i++)
+    {
+        if (i == 0)
+        {
+            rectangle_array[i].highlight = LOWLIGHT;
+            rectangle_array[i].rect_start_x = ((CONFIG_WIDTH / 4) * 3) + 14;
+            rectangle_array[i].rect_start_y = CONFIG_HEIGHT - 110;
+            rectangle_array[i].rect_end_x = rectangle_array[i].rect_start_x + profile_rect_width;
+            rectangle_array[i].rect_end_y = rectangle_array[i].rect_start_y + profile_rect_height;
+        }
+        else
+        {
+            rectangle_array[i].highlight = LOWLIGHT;
+            rectangle_array[i].rect_start_x = rectangle_array[i - 1].rect_start_x - profile_rect_margin_height - profile_rect_width;
+            rectangle_array[i].rect_start_y = rectangle_array[i - 1].rect_start_y;
+            rectangle_array[i].rect_end_x = rectangle_array[i].rect_start_x + profile_rect_width;
+            rectangle_array[i].rect_end_y = rectangle_array[i].rect_start_y + profile_rect_height;
+        }
+        rectangle_array[i].rect_text_array_offset = i;
+        rectangle_array[i].rect_text = rectangle_display[i];
+        rectangle_array[i].rect_color = WHITE;
+        rectangle_array[i].rect_text_offset_x = 15;
+        rectangle_array[i].rect_text_offset_y = 13;
+        rectangle_array[i].text_direction = DIRECTION90;
+        rectangle_array[i].text_color = WHITE;
+    }
+    for (int i = 0; i < 5; i++)
+    {
+        printf("rectangle_array[%d].rect_start_x is: %d\n", (i + 1), rectangle_array[i].rect_start_x);
+        printf("rectangle_array[%d].rect_start_y is: %d\n", (i + 1), rectangle_array[i].rect_start_y);
+        printf("rectangle_array[%d].rect_end_x is: %d\n", (i + 1), rectangle_array[i].rect_end_x);
+        printf("rectangle_array[%d].rect_end_y is: %d\n", (i + 1), rectangle_array[i].rect_end_y);
+        printf("rectange_array[%d].rect_text_array_offset is: %d\n", (i + 1), rectangle_array[i].rect_text_array_offset);
+        printf("rectange_array[%d].rect_text is: %s\n", (i + 1), rectangle_array[i].rect_text);
+        printf("***************************\n");
+    }
+    return ret;
+}
+
+void draw_profile_rects(TFT_t *dev, FontxFile *fx)
+{
+    for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
+    {
+        lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y, rectangle_array[i].rect_end_x,
+                    rectangle_array[i].rect_end_y, rectangle_array[i].rect_color);
+        lcdSetFontDirection(dev, rectangle_array[i].text_direction);
+    }
+}
+
+void change_text(TFT_t *dev, FontxFile *file)
+{
+    for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
+    {
+        lcdDrawString(dev, file, rectangle_array[i].rect_start_x + rectangle_array[i].rect_text_offset_x,
+                      rectangle_array[i].rect_start_y + rectangle_array[i].rect_text_offset_y,
+                      (uint8_t *)rectangle_array[i].rect_text, rectangle_array[i].text_color);
+    }
+}
+
+void add_text_with_offset(int offset)
+{
+    for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
+    {
+        rectangle_array[i].rect_text = rectangle_display[i + offset];
+    }
+}
+
+void clear_text(TFT_t *dev, FontxFile *file)
+{
+    for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
+    {
+        lcdDrawString(dev, file, rectangle_array[i].rect_start_x + rectangle_array[i].rect_text_offset_x,
+                      rectangle_array[i].rect_start_y + rectangle_array[i].rect_text_offset_y,
+                      (uint8_t *)rectangle_array[i].rect_text, BLACK);
+    }
+}
+
 e_profile_idx_t profile_add(e_profile_idx_t profile_idx, uint16_t rect_color, char rect_text[], uint16_t text_color)
 {
     if (NULL == profile_rect_head)
@@ -155,7 +238,7 @@ e_profile_idx_t profile_add(e_profile_idx_t profile_idx, uint16_t rect_color, ch
             current_profile->next->next = NULL;
         }
     }
-    return TEMP_PROJECT_PROFILE_1;
+    return 0;
 }
 
 void print_profiles()
@@ -187,28 +270,28 @@ void print_profiles()
     }
 }
 
-void draw_profile_rects(TFT_t *dev, FontxFile *fx)
-{
-    if (!profile_rect_head)
-    {
-        printf("NULL profile head!!\n");
-    }
-    else
-    {
-        ll_temp_project_profiles_t *current_profile = profile_rect_head;
-        while (current_profile)
-        {
-            lcdDrawRect(dev, current_profile->rect_start_x,
-                        current_profile->rect_start_y, current_profile->rect_end_x,
-                        current_profile->rect_end_y, current_profile->rect_color);
-            lcdSetFontDirection(dev, current_profile->text_direction);
-            lcdDrawString(dev, fx, current_profile->rect_start_x + current_profile->rect_text_offset_x,
-                          current_profile->rect_start_y + current_profile->rect_text_offset_y,
-                          (uint8_t *)current_profile->rect_text, current_profile->text_color);
-            current_profile = current_profile->next;
-        }
-    }
-}
+// void draw_profile_rects(TFT_t *dev, FontxFile *fx)
+// {
+//     if (!profile_rect_head)
+//     {
+//         printf("NULL profile head!!\n");
+//     }
+//     else
+//     {
+//         ll_temp_project_profiles_t *current_profile = profile_rect_head;
+//         while (current_profile)
+//         {
+//             lcdDrawRect(dev, current_profile->rect_start_x,
+//                         current_profile->rect_start_y, current_profile->rect_end_x,
+//                         current_profile->rect_end_y, current_profile->rect_color);
+//             lcdSetFontDirection(dev, current_profile->text_direction);
+//             lcdDrawString(dev, fx, current_profile->rect_start_x + current_profile->rect_text_offset_x,
+//                           current_profile->rect_start_y + current_profile->rect_text_offset_y,
+//                           (uint8_t *)current_profile->rect_text, current_profile->text_color);
+//             current_profile = current_profile->next;
+//         }
+//     }
+// }
 
 void draw_graph(TFT_t *dev, uint8_t *temperatureProfile, int offset_x, int offset_y, int min, int max, uint32_t color)
 {
@@ -242,27 +325,27 @@ uint8_t *select_profile(TFT_t *dev, e_profile_idx_t profile_index)
     uint8_t *temperatureProfile = temperatureProfile1;
     switch (profile_index)
     {
-    case TEMP_PROJECT_PROFILE_1:
+    case 1:
     {
         temperatureProfile = temperatureProfile1;
         break;
     }
-    case TEMP_PROJECT_PROFILE_2:
+    case 2:
     {
         temperatureProfile = temperatureProfile2;
         break;
     }
-    case TEMP_PROJECT_PROFILE_3:
+    case 3:
     {
         temperatureProfile = temperatureProfile3;
         break;
     }
-    case TEMP_PROJECT_PROFILE_4:
+    case 4:
     {
         temperatureProfile = temperatureProfile4;
         break;
     }
-    case TEMP_PROJECT_PROFILE_5:
+    case 5:
     {
         temperatureProfile = temperatureProfile5;
         break;
@@ -275,40 +358,74 @@ uint8_t *select_profile(TFT_t *dev, e_profile_idx_t profile_index)
     return temperatureProfile;
 }
 
-void highlight_profile(TFT_t *dev, e_profile_idx_t profile_idx)
+void highlight_profile(TFT_t *dev, const e_profile_idx_t profile_idx)
 {
-    if (!profile_rect_head)
+    if ((profile_idx > 0) && (profile_idx <= 5))
     {
-        printf("NULL profile head!!\n");
-    }
-    else
-    {
-        ll_temp_project_profiles_t *current_profile = profile_rect_head;
-        while (current_profile)
+        for (int i = 0; i < 5; i++)
         {
-            if (profile_idx == current_profile->profile_idx)
+            if ((profile_idx - 1) == i)
             {
-                // Outer
-                lcdDrawRect(dev, current_profile->rect_start_x - 1,
-                            current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
-                            current_profile->rect_end_y + 1, current_profile->rect_color);
-                lcdDrawRect(dev, current_profile->rect_start_x + 1,
-                            current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
-                            current_profile->rect_end_y - 1, current_profile->rect_color);
+                // Outer rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
+                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, GREEN);
+                // Middle rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
+                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, GREEN);
+                // Inner rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
+                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, GREEN);
             }
             else
             {
-                lcdDrawRect(dev, current_profile->rect_start_x - 1,
-                            current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
-                            current_profile->rect_end_y + 1, BLACK);
-                lcdDrawRect(dev, current_profile->rect_start_x + 1,
-                            current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
-                            current_profile->rect_end_y - 1, BLACK);
+                // Outer rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
+                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, BLACK);
+                // Middle rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
+                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, WHITE);
+                // Inner rectangle
+                lcdDrawRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
+                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, BLACK);
             }
-            current_profile = current_profile->next;
         }
     }
 }
+
+// void highlight_profile(TFT_t *dev, e_profile_idx_t profile_idx)
+// {
+//     if (!profile_rect_head)
+//     {
+//         printf("NULL profile head!!\n");
+//     }
+//     else
+//     {
+//         ll_temp_project_profiles_t *current_profile = profile_rect_head;
+//         while (current_profile)
+//         {
+//             if (profile_idx == current_profile->profile_idx)
+//             {
+//                 // Outer
+//                 lcdDrawRect(dev, current_profile->rect_start_x - 1,
+//                             current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
+//                             current_profile->rect_end_y + 1, current_profile->rect_color);
+//                 lcdDrawRect(dev, current_profile->rect_start_x + 1,
+//                             current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
+//                             current_profile->rect_end_y - 1, current_profile->rect_color);
+//             }
+//             else
+//             {
+//                 lcdDrawRect(dev, current_profile->rect_start_x - 1,
+//                             current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
+//                             current_profile->rect_end_y + 1, BLACK);
+//                 lcdDrawRect(dev, current_profile->rect_start_x + 1,
+//                             current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
+//                             current_profile->rect_end_y - 1, BLACK);
+//             }
+//             current_profile = current_profile->next;
+//         }
+//     }
+// }
 
 void clear_profile_graph(TFT_t *dev, uint8_t *temperatureProfile, int offset_x, int offset_y, int min, int max)
 {
