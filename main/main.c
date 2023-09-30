@@ -26,6 +26,7 @@
 #include "esp_random.h"
 #include "temperature_profiles.h"
 #include "driver/gpio.h"
+#include "keypad.h"
 
 #include "ili9486.h"
 #define DRIVER "ST7796"
@@ -137,9 +138,15 @@ void TFT(void *pvParameters)
 	traceHeap();
 
 	lcdFillScreen(&dev, background_color);
-	lcdDrawRect(&dev, 15, 15, CONFIG_WIDTH - 15, CONFIG_HEIGHT - 120, rectangle_color);
-	lcdDrawRect(&dev, 16, 16, CONFIG_WIDTH - 16, CONFIG_HEIGHT - 121, rectangle_color);
-	lcdDrawRect(&dev, 17, 17, CONFIG_WIDTH - 17, CONFIG_HEIGHT - 122, rectangle_color);
+	// Outer
+	// lcdDrawRect(&dev, 15, 15, CONFIG_WIDTH - 15, CONFIG_HEIGHT - 120, rectangle_color);
+	// Middle
+	// lcdDrawRect(&dev, 16, 16, CONFIG_WIDTH - 16, CONFIG_HEIGHT - 121, rectangle_color);
+	// Inner
+	// lcdDrawRect(&dev, 17, 17, CONFIG_WIDTH - 17, CONFIG_HEIGHT - 122, rectangle_color);
+
+	create_keypad_number_displayer(&dev);
+	create_keypad_numbers(&dev);
 
 	draw_profile_rects(&dev, fx16M);
 	change_text(&dev, fx16M);

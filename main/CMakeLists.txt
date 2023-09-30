@@ -10,4 +10,4 @@ if (IDF_VERSION_MAJOR STREQUAL "5")
 	list(APPEND srcs "decode_jpeg_v5.c")
 endif()
 
-idf_component_register(SRCS ${srcs} INCLUDE_DIRS . REQUIRES temperature_profiles nvs_flash spiffs)
+idf_component_register(SRCS ${srcs} INCLUDE_DIRS . REQUIRES temperature_profiles nvs_flash spiffs keypad)
