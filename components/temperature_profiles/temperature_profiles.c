@@ -154,8 +154,8 @@ void draw_profile_rects(TFT_t *dev, FontxFile *fx)
 {
     for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
     {
-        lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y, rectangle_array[i].rect_end_x,
-                    rectangle_array[i].rect_end_y, rectangle_array[i].rect_color);
+        lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y, rectangle_array[i].rect_end_x,
+                    rectangle_array[i].rect_end_y, 5, rectangle_array[i].rect_color);
         lcdSetFontDirection(dev, rectangle_array[i].text_direction);
     }
 }
@@ -367,26 +367,26 @@ void highlight_profile(TFT_t *dev, const e_profile_idx_t profile_idx)
             if ((profile_idx - 1) == i)
             {
                 // Outer rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
-                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, GREEN);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
+                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, GREEN);
                 // Middle rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
-                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, GREEN);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
+                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, GREEN);
                 // Inner rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
-                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, GREEN);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
+                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, GREEN);
             }
             else
             {
                 // Outer rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
-                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, BLACK);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
+                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, BLACK);
                 // Middle rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
-                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, WHITE);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
+                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, WHITE);
                 // Inner rectangle
-                lcdDrawRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
-                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, BLACK);
+                lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
+                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, BLACK);
             }
         }
     }
