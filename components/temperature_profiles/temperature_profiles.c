@@ -106,7 +106,10 @@ static const int horizontal_gap = 5;
 static const int verticle_gap = 2;
 
 static s_rectangle_t rectangle_array[RECTANGLE_ARRAY_SIZE] = {{0}, {0}, {0}, {0}, {0}};
-static char *rectangle_display[RECTANGLE_DISPLAY_SIZE] = {"Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5", "Keypad"};
+static const char *rectangle_display[RECTANGLE_DISPLAY_SIZE] = {"Profile 1", "Profile 2", "Profile 3", "Profile 4", "Profile 5", "Keypad"};
+// static const e_rect_type_t rectangle_array_type[RECTANGLE_DISPLAY_SIZE] = {TEMP_PROJECT_PROFILE_1, TEMP_PROJECT_PROFILE_2,
+//                                                                             TEMP_PROJECT_PROFILE_3, TEMP_PROJECT_PROFILE_4, 
+//                                                                             TEMP_PROJECT_PROFILE_5, TEMP_PROJECT_PROFILE_KEYPAD};
 
 int rectangle_array_prepare()
 {
@@ -155,7 +158,7 @@ void draw_profile_rects(TFT_t *dev, FontxFile *fx)
     for (int i = 0; i < RECTANGLE_ARRAY_SIZE; i++)
     {
         lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y, rectangle_array[i].rect_end_x,
-                    rectangle_array[i].rect_end_y, 5, rectangle_array[i].rect_color);
+                         rectangle_array[i].rect_end_y, 5, rectangle_array[i].rect_color);
         lcdSetFontDirection(dev, rectangle_array[i].text_direction);
     }
 }
@@ -241,58 +244,6 @@ e_profile_idx_t profile_add(e_profile_idx_t profile_idx, uint16_t rect_color, ch
     return 0;
 }
 
-void print_profiles()
-{
-    if (!profile_rect_head)
-    {
-        printf("NULL profile head!!");
-    }
-    else
-    {
-        ll_temp_project_profiles_t *current_profile = profile_rect_head;
-        while (current_profile)
-        {
-            printf("Profile index is %d\n", current_profile->profile_idx);
-            printf("highlight: %s\n", current_profile->highlight ? "true" : "false");
-            printf("rect_start_x is %d\n", current_profile->rect_start_x);
-            printf("rect_start_y is %d\n", current_profile->rect_start_y);
-            printf("rect_end_x is %d\n", current_profile->rect_end_x);
-            printf("rect_end_y is %d\n", current_profile->rect_end_y);
-            printf("rect_color is 0x%04X\n", current_profile->rect_color);
-            printf("rect_text is %s\n", current_profile->rect_text);
-            printf("rect_text_offset_x is %d\n", current_profile->rect_text_offset_x);
-            printf("rect_text_offset_y is %d\n", current_profile->rect_text_offset_y);
-            printf("text_direction is %d\n", current_profile->text_direction);
-            printf("text_color is 0x%04X\n", current_profile->text_color);
-            printf("***************************\n");
-            current_profile = current_profile->next;
-        }
-    }
-}
-
-// void draw_profile_rects(TFT_t *dev, FontxFile *fx)
-// {
-//     if (!profile_rect_head)
-//     {
-//         printf("NULL profile head!!\n");
-//     }
-//     else
-//     {
-//         ll_temp_project_profiles_t *current_profile = profile_rect_head;
-//         while (current_profile)
-//         {
-//             lcdDrawRect(dev, current_profile->rect_start_x,
-//                         current_profile->rect_start_y, current_profile->rect_end_x,
-//                         current_profile->rect_end_y, current_profile->rect_color);
-//             lcdSetFontDirection(dev, current_profile->text_direction);
-//             lcdDrawString(dev, fx, current_profile->rect_start_x + current_profile->rect_text_offset_x,
-//                           current_profile->rect_start_y + current_profile->rect_text_offset_y,
-//                           (uint8_t *)current_profile->rect_text, current_profile->text_color);
-//             current_profile = current_profile->next;
-//         }
-//     }
-// }
-
 void draw_graph(TFT_t *dev, uint8_t *temperatureProfile, int offset_x, int offset_y, int min, int max, uint32_t color)
 {
     static int start_x;
@@ -325,29 +276,34 @@ uint8_t *select_profile(TFT_t *dev, e_profile_idx_t profile_index)
     uint8_t *temperatureProfile = temperatureProfile1;
     switch (profile_index)
     {
-    case 1:
+    case TEMP_PROJECT_PROFILE_1:
     {
         temperatureProfile = temperatureProfile1;
         break;
     }
-    case 2:
+    case TEMP_PROJECT_PROFILE_2:
     {
         temperatureProfile = temperatureProfile2;
         break;
     }
-    case 3:
+    case TEMP_PROJECT_PROFILE_3:
     {
         temperatureProfile = temperatureProfile3;
         break;
     }
-    case 4:
+    case TEMP_PROJECT_PROFILE_4:
     {
         temperatureProfile = temperatureProfile4;
         break;
     }
-    case 5:
+    case TEMP_PROJECT_PROFILE_5:
     {
         temperatureProfile = temperatureProfile5;
+        break;
+    }
+    case TEMP_PROJECT_PROFILE_KEYPAD:
+    {
+        temperatureProfile = NULL;
         break;
     }
     default:
@@ -368,64 +324,29 @@ void highlight_profile(TFT_t *dev, const e_profile_idx_t profile_idx)
             {
                 // Outer rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
-                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, GREEN);
+                                 rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, GREEN);
                 // Middle rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
-                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, GREEN);
+                                 rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, GREEN);
                 // Inner rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
-                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, GREEN);
+                                 rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, GREEN);
             }
             else
             {
                 // Outer rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x - 1, rectangle_array[i].rect_start_y - 1,
-                            rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, BLACK);
+                                 rectangle_array[i].rect_end_x + 1, rectangle_array[i].rect_end_y + 1, 5, BLACK);
                 // Middle rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x, rectangle_array[i].rect_start_y,
-                            rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, WHITE);
+                                 rectangle_array[i].rect_end_x, rectangle_array[i].rect_end_y, 5, WHITE);
                 // Inner rectangle
                 lcdDrawRoundRect(dev, rectangle_array[i].rect_start_x + 1, rectangle_array[i].rect_start_y + 1,
-                            rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, BLACK);
+                                 rectangle_array[i].rect_end_x - 1, rectangle_array[i].rect_end_y - 1, 5, BLACK);
             }
         }
     }
 }
-
-// void highlight_profile(TFT_t *dev, e_profile_idx_t profile_idx)
-// {
-//     if (!profile_rect_head)
-//     {
-//         printf("NULL profile head!!\n");
-//     }
-//     else
-//     {
-//         ll_temp_project_profiles_t *current_profile = profile_rect_head;
-//         while (current_profile)
-//         {
-//             if (profile_idx == current_profile->profile_idx)
-//             {
-//                 // Outer
-//                 lcdDrawRect(dev, current_profile->rect_start_x - 1,
-//                             current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
-//                             current_profile->rect_end_y + 1, current_profile->rect_color);
-//                 lcdDrawRect(dev, current_profile->rect_start_x + 1,
-//                             current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
-//                             current_profile->rect_end_y - 1, current_profile->rect_color);
-//             }
-//             else
-//             {
-//                 lcdDrawRect(dev, current_profile->rect_start_x - 1,
-//                             current_profile->rect_start_y - 1, current_profile->rect_end_x + 1,
-//                             current_profile->rect_end_y + 1, BLACK);
-//                 lcdDrawRect(dev, current_profile->rect_start_x + 1,
-//                             current_profile->rect_start_y + 1, current_profile->rect_end_x - 1,
-//                             current_profile->rect_end_y - 1, BLACK);
-//             }
-//             current_profile = current_profile->next;
-//         }
-//     }
-// }
 
 void clear_profile_graph(TFT_t *dev, uint8_t *temperatureProfile, int offset_x, int offset_y, int min, int max)
 {

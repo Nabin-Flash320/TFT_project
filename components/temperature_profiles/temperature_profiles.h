@@ -10,11 +10,11 @@
 
 #define HIGHLIGHT true
 #define LOWLIGHT false
-#define TEMP_PROJECT_PROFILE_MAX 7
+// #define TEMP_PROJECT_PROFILE_MAX 7
 #define RECTANGLE_ARRAY_SIZE 5
 #define RECTANGLE_DISPLAY_SIZE 6
 
-typedef int e_profile_idx_t;
+// typedef int e_profile_idx_t;
 
 typedef enum e_rect_type
 {
@@ -23,16 +23,16 @@ typedef enum e_rect_type
     RECT_TYPE_MAX
 } e_rect_type_t;
 
-// typedef enum e_profile_idx
-// {
-//     TEMP_PROJECT_PROFILE_1 = 1,
-//     TEMP_PROJECT_PROFILE_2,
-//     TEMP_PROJECT_PROFILE_3,
-//     TEMP_PROJECT_PROFILE_4,
-//     TEMP_PROJECT_PROFILE_5,
-//     TEMP_PROJECT_PROFILE_KEYPAD,
-//     TEMP_PROJECT_PROFILE_MAX,
-// } e_profile_idx_t;
+typedef enum e_profile_idx
+{
+    TEMP_PROJECT_PROFILE_1 = 1,
+    TEMP_PROJECT_PROFILE_2,
+    TEMP_PROJECT_PROFILE_3,
+    TEMP_PROJECT_PROFILE_4,
+    TEMP_PROJECT_PROFILE_5,
+    TEMP_PROJECT_PROFILE_KEYPAD,
+    TEMP_PROJECT_PROFILE_MAX,
+} e_profile_idx_t;
 
 typedef struct ll_temp_project_profiles
 {
@@ -70,7 +70,6 @@ typedef struct s_rectangle
 
 int rectangle_array_prepare();
 e_profile_idx_t profile_add(e_profile_idx_t profile_idx, uint16_t rect_color, char rect_text[], uint16_t text_color);
-void print_profiles();
 void draw_profile_rects(TFT_t *dev, FontxFile *fx);
 void draw_graph(TFT_t *dev, uint8_t *temperatureProfile, int offset_x, int offset_y, int min, int max, uint32_t color);
 uint8_t *select_profile(TFT_t *dev, e_profile_idx_t profile_index);

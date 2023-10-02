@@ -108,6 +108,20 @@ static void profile_selector_gpio_queue_receiver(void *parama)
 					change_text(&dev, fx16M);
 				}
 				highlight_profile(&dev, highlight_rect);
+				if (NULL != temperatureProfile)
+				{
+					clear_profile_graph(&dev, temperatureProfile, 36, 36, 0, 0);
+				}
+				temperatureProfile = select_profile(&dev, profile_selected);
+				if (NULL == temperatureProfile)
+				{
+					create_keypad_number_displayer(&dev);
+					create_keypad_numbers(&dev, fx32M);
+				}
+				else
+				{
+					draw_profile_graph(&dev, temperatureProfile, 36, 36, 0, 0, WHITE);
+				}
 				tick_previous = tick_now;
 			}
 		}
@@ -139,14 +153,11 @@ void TFT(void *pvParameters)
 
 	lcdFillScreen(&dev, background_color);
 	// Outer
-	// lcdDrawRect(&dev, 15, 15, CONFIG_WIDTH - 15, CONFIG_HEIGHT - 120, rectangle_color);
+	lcdDrawRoundRect(&dev, 15, 15, CONFIG_WIDTH - 15, CONFIG_HEIGHT - 120, 5, rectangle_color);
 	// Middle
-	// lcdDrawRect(&dev, 16, 16, CONFIG_WIDTH - 16, CONFIG_HEIGHT - 121, rectangle_color);
+	lcdDrawRoundRect(&dev, 16, 16, CONFIG_WIDTH - 16, CONFIG_HEIGHT - 121, 5, rectangle_color);
 	// Inner
-	// lcdDrawRect(&dev, 17, 17, CONFIG_WIDTH - 17, CONFIG_HEIGHT - 122, rectangle_color);
-
-	create_keypad_number_displayer(&dev);
-	create_keypad_numbers(&dev);
+	lcdDrawRoundRect(&dev, 17, 17, CONFIG_WIDTH - 17, CONFIG_HEIGHT - 122, 5, rectangle_color);
 
 	draw_profile_rects(&dev, fx16M);
 	change_text(&dev, fx16M);
@@ -162,8 +173,9 @@ void TFT(void *pvParameters)
 	gpio_install_isr_service(0);
 	gpio_isr_handler_add(gpio_num_profile_selector_inc, profile_selector_gpio_handler, (void *)&gpio_num_profile_selector_inc);
 
-	uint8_t *temperature_profile = select_profile(&dev, 1);
+	temperatureProfile = select_profile(&dev, 1);
 	highlight_profile(&dev, 1);
+	draw_graph(&dev, temperatureProfile, 36, 36, 0, 0, WHITE);
 
 	while (1)
 	{

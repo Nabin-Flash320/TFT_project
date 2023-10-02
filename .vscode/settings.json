@@ -8,6 +8,8 @@
         "random": "c",
         "limits": "c",
         "semaphore": "c",
-        "keypad.h": "c"
+        "keypad.h": "c",
+        "gpio.h": "c",
+        "temperature_profiles.h": "c"
     }
 }
